@@ -1,0 +1,61 @@
+require "selenium-webdriver"
+
+browser = Selenium::WebDriver.for(:firefox)
+
+Given(/^that I park for one hour in economy parking$/) do
+  browser.navigate.to "http://www.shino.de/parkcalc/"
+  
+  select = browser.find_element(:xpath, "//select[@name='ParkingLot']")
+  select.click
+  option = select.find_elements(:tag_name => "option").find {|option| option.text == 'Economy Parking'}
+  sleep 2
+  option.click
+  
+  starting_date = browser.find_element(:xpath, "//input[@id='StartingDate']")
+  starting_date.clear
+  starting_date.send_keys('1/1/2014')  
+
+  leaving_date = browser.find_element(:xpath, "//input[@id='LeavingDate']")
+  leaving_date.clear
+  leaving_date.send_keys('1/1/2014')
+  
+  starting_time = browser.find_element(:xpath, "//input[@id='StartingTime']")
+  starting_time.clear
+  starting_time.send_keys('10:00')  
+
+  leaving_time = browser.find_element(:xpath, "//input[@id='LeavingTime']")
+  leaving_time.clear
+  leaving_time.send_keys('11:00')
+end
+
+Given(/^that I park for one hour in valet parking$/) do
+  browser.navigate.to "http://www.shino.de/parkcalc/"
+  
+  starting_date = browser.find_element(:xpath, "//input[@id='StartingDate']")
+  starting_date.clear
+  starting_date.send_keys('1/1/2014')  
+
+  leaving_date = browser.find_element(:xpath, "//input[@id='LeavingDate']")
+  leaving_date.clear
+  leaving_date.send_keys('1/1/2014')
+  
+  starting_time = browser.find_element(:xpath, "//input[@id='StartingTime']")
+  starting_time.clear
+  starting_time.send_keys('10:00')  
+
+  leaving_time = browser.find_element(:xpath, "//input[@id='LeavingTime']")
+  leaving_time.clear
+  leaving_time.send_keys('11:00')
+end
+
+When(/^I take my car back$/) do 
+  browser.find_element(:xpath, "//input[@type='submit']").click
+end
+
+Then(/^I pay \$ (\d+)\.(\d+)$/) do |dollars, cents|
+  calculated_price = browser.find_element(:xpath, "//span[@class='SubHead']").text
+  #browser.quit
+  if "$ #{dollars}.#{cents}" != calculated_price
+    raise "wrong price: #{calculated_price}"
+  end
+end
